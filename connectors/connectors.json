@@ -1,0 +1,88 @@
+{
+  "_comment": "Copy-paste configs for creating each sample agent in the platform UI (Agents -> New, pick the connector, paste the config). Endpoints assume the platform can reach this service at localhost:8080. If the PLATFORM runs in Docker, replace localhost with host.docker.internal. To register every agent in one shot instead, apply ../manifests/sample-agents.yaml from the Platform as Code screen.",
+  "agents": [
+    {
+      "name": "chatbot-support",
+      "connector_key": "http",
+      "config": {
+        "endpoint_url": "http://localhost:8080/chat",
+        "body_template": { "prompt": "{{prompt}}" },
+        "response_extraction": "response",
+        "timeout_seconds": 15
+      }
+    },
+    {
+      "name": "voice-iva",
+      "connector_key": "http",
+      "note": "IVR/IVA brain - the NLU turn an voice bot calls after speech-to-text.",
+      "config": {
+        "endpoint_url": "http://localhost:8080/voice/turn",
+        "body_template": { "prompt": "{{prompt}}" },
+        "response_extraction": "response",
+        "timeout_seconds": 10
+      }
+    },
+    {
+      "name": "openai-llm",
+      "connector_key": "openai_compatible",
+      "config": {
+        "endpoint_url": "http://localhost:8080/v1/chat/completions",
+        "model": "acmebot-1"
+      }
+    },
+    {
+      "name": "azure-foundry",
+      "connector_key": "azure_ai_foundry",
+      "config": {
+        "endpoint": "http://localhost:8080",
+        "deployment_name": "acmebot-1",
+        "api_key": "mock-key-not-checked"
+      }
+    },
+    {
+      "name": "dialogflow-cx",
+      "connector_key": "http",
+      "note": "Authentic Dialogflow CX detectIntent response shape, served locally. The native dialogflow_cx connector is locked to Google's host, so register the mock via the generic HTTP connector with the extraction path below.",
+      "config": {
+        "endpoint_url": "http://localhost:8080/dialogflow/detectIntent",
+        "body_template": { "queryInput": { "text": { "text": "{{prompt}}" } } },
+        "response_extraction": "queryResult.responseMessages[0].text.text[0]",
+        "timeout_seconds": 15
+      }
+    },
+    {
+      "name": "genesys-cx",
+      "connector_key": "http",
+      "note": "Authentic Genesys inbound-message shape, served locally. The native genesys_cloud connector is locked to the Genesys host, so register via the generic HTTP connector.",
+      "config": {
+        "endpoint_url": "http://localhost:8080/genesys/inbound",
+        "body_template": { "text": "{{prompt}}", "type": "Text", "direction": "Inbound" },
+        "response_extraction": "textBody",
+        "timeout_seconds": 15
+      }
+    },
+    {
+      "name": "copilot-studio",
+      "connector_key": "copilot_studio",
+      "config": {
+        "endpoint": "http://localhost:8080/v3/directline",
+        "secret": "mock-secret-not-checked",
+        "poll_timeout": 10
+      }
+    },
+    {
+      "name": "rasa-bot",
+      "connector_key": "rasa",
+      "config": {
+        "endpoint_url": "http://localhost:8080/webhooks/rest/webhook"
+      }
+    },
+    {
+      "name": "watsonx-bot",
+      "connector_key": "watsonx_assistant",
+      "config": {
+        "endpoint_url": "http://localhost:8080/watsonx/message"
+      }
+    }
+  ]
+}

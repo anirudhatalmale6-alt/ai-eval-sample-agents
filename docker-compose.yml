@@ -1,0 +1,12 @@
+services:
+  sample-agents:
+    build: .
+    image: ai-eval-sample-agents:latest
+    container_name: ai-eval-sample-agents
+    ports:
+      - "8080:8080"
+    environment:
+      # Turn these down to 0 for the fastest possible load runs.
+      AGENT_BASE_LATENCY_MS: "40"
+      AGENT_JITTER_MS: "60"
+    restart: unless-stopped
