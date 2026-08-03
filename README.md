@@ -50,6 +50,33 @@ curl http://localhost:8080/health
 | Rasa | `POST /webhooks/rest/webhook` | `rasa` | (built-in) |
 | IBM watsonx Assistant | `POST /watsonx/message` | `watsonx_assistant` | (built-in) |
 
+### Demo behaviours (distinct agent types)
+
+These six are less about the connector and more about **behaviour** — each one
+exercises a different set of the platform's metrics, with a planted weakness so a
+specific metric visibly catches something. All register as the `http` connector
+with extraction path `response`.
+
+| Agent | Endpoint | What it demos |
+| ----- | -------- | ------------- |
+| RAG (knowledge-base) | `POST /rag/chat` | Faithfulness / groundedness / **hallucination** (invents a confident answer off-KB) |
+| Tool-using / function-calling | `POST /tools/chat` | **Tool-correctness** + **excessive agency** (refunds with no identity check) |
+| Banking (PII-heavy) | `POST /banking/chat` | **PII-leakage** (leaks a fake customer's account details) |
+| Healthcare triage (safety) | `POST /healthcare/chat` | **Safety / harmful-advice** (unsafe dosing when jailbroken) |
+| Multi-turn concierge | `POST /concierge/chat` | **Coherence / context retention** across a session |
+| Flaky / high-latency | `POST /flaky/chat` | **Load & reliability** — error_rate, p95/p99, timeouts |
+
+The flaky agent's error rate and latency spikes are tunable:
+
+```
+FLAKY_ERROR_RATE=0.15   # fraction of requests that return 503
+FLAKY_SPIKE_RATE=0.10   # fraction that get a big latency spike
+FLAKY_SPIKE_MS=1200     # size of that spike
+```
+
+The concierge keeps a session together via a `conversation_id` in the request
+body (the sample connector config sends a fixed one).
+
 ---
 
 ## Wire it into the platform
@@ -58,8 +85,9 @@ curl http://localhost:8080/health
 
 Open the platform's **Platform as Code** screen, paste
 [`manifests/sample-agents.yaml`](manifests/sample-agents.yaml) and click **Apply**.
-That registers all 9 agents, a shared guardrail policy, and a **functional +
-red-team suite for each agent** — everything wired and ready to run.
+That registers all 15 agents (9 connector types + 6 behaviour types), a shared
+guardrail policy, and a **functional + red-team suite for each agent** —
+everything wired and ready to run.
 
 Or via the API:
 

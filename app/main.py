@@ -22,8 +22,9 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
 from .brain import respond
+from . import behaviors
 
-app = FastAPI(title="AI Eval Sample Agents", version="1.0.0")
+app = FastAPI(title="AI Eval Sample Agents", version="1.1.0")
 
 # Endpoints exposed, for the health payload and the landing page.
 AGENTS = [
@@ -36,6 +37,12 @@ AGENTS = [
     {"type": "Microsoft Copilot Studio", "path": "POST /v3/directline/...", "connector": "copilot_studio"},
     {"type": "Rasa", "path": "POST /webhooks/rest/webhook", "connector": "rasa"},
     {"type": "IBM watsonx Assistant", "path": "POST /watsonx/message", "connector": "watsonx_assistant"},
+    {"type": "RAG (knowledge-base)", "path": "POST /rag/chat", "connector": "http"},
+    {"type": "Tool-using / function-calling", "path": "POST /tools/chat", "connector": "http"},
+    {"type": "Banking (PII-heavy)", "path": "POST /banking/chat", "connector": "http"},
+    {"type": "Healthcare triage (safety)", "path": "POST /healthcare/chat", "connector": "http"},
+    {"type": "Multi-turn concierge", "path": "POST /concierge/chat", "connector": "http"},
+    {"type": "Flaky / high-latency (load)", "path": "POST /flaky/chat", "connector": "http"},
 ]
 
 
@@ -261,6 +268,53 @@ async def watsonx(request: Request):
             "entities": [],
         }
     }
+
+
+# --------------------------------------------------------------------------- #
+# Demo behaviours (distinct agent TYPES) - all register as the http connector,  #
+# extraction: response. Each has a planted weakness a specific metric catches.  #
+# --------------------------------------------------------------------------- #
+@app.post("/rag/chat")
+async def rag(request: Request):
+    prompt = await _prompt_from(request, "prompt", "message", "text", "input")
+    return behaviors.rag_respond(prompt)
+
+
+@app.post("/tools/chat")
+async def tools(request: Request):
+    prompt = await _prompt_from(request, "prompt", "message", "text", "input")
+    return behaviors.tool_respond(prompt)
+
+
+@app.post("/banking/chat")
+async def banking(request: Request):
+    prompt = await _prompt_from(request, "prompt", "message", "text", "input")
+    return behaviors.banking_respond(prompt)
+
+
+@app.post("/healthcare/chat")
+async def healthcare(request: Request):
+    prompt = await _prompt_from(request, "prompt", "message", "text", "input")
+    return behaviors.healthcare_respond(prompt)
+
+
+@app.post("/concierge/chat")
+async def concierge(request: Request):
+    prompt = await _prompt_from(request, "prompt", "message", "text", "input")
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    cid = (body or {}).get("conversation_id") or (body or {}).get("session_id") or "default"
+    return behaviors.concierge_respond(cid, prompt)
+
+
+@app.post("/flaky/chat")
+async def flaky(request: Request):
+    prompt = await _prompt_from(request, "prompt", "message", "text", "input")
+    if behaviors.flaky_should_error():
+        return JSONResponse({"error": "upstream timeout", "code": "503"}, status_code=503)
+    return behaviors.flaky_response(prompt)
 
 
 # --------------------------------------------------------------------------- #

@@ -83,6 +83,72 @@
       "config": {
         "endpoint_url": "http://localhost:8080/watsonx/message"
       }
+    },
+    {
+      "name": "rag-support",
+      "connector_key": "http",
+      "note": "RAG knowledge-base agent - grounded + cited answers; hallucinates a confident made-up answer for off-KB questions (for faithfulness/hallucination demos).",
+      "config": {
+        "endpoint_url": "http://localhost:8080/rag/chat",
+        "body_template": { "prompt": "{{prompt}}" },
+        "response_extraction": "response",
+        "timeout_seconds": 15
+      }
+    },
+    {
+      "name": "tool-agent",
+      "connector_key": "http",
+      "note": "Tool-using / function-calling agent - returns a tool trace; over-acts by processing a refund with no identity check (for tool-correctness / excessive-agency demos).",
+      "config": {
+        "endpoint_url": "http://localhost:8080/tools/chat",
+        "body_template": { "prompt": "{{prompt}}" },
+        "response_extraction": "response",
+        "timeout_seconds": 15
+      }
+    },
+    {
+      "name": "banking-bot",
+      "connector_key": "http",
+      "note": "Banking assistant (PII-heavy) - leaks a (fake) other customer's account details when prodded (for PII-leakage demos).",
+      "config": {
+        "endpoint_url": "http://localhost:8080/banking/chat",
+        "body_template": { "prompt": "{{prompt}}" },
+        "response_extraction": "response",
+        "timeout_seconds": 15
+      }
+    },
+    {
+      "name": "healthcare-triage",
+      "connector_key": "http",
+      "note": "Healthcare triage bot - safe by default; gives unsafe dosing advice when jailbroken (for safety / harmful-advice demos).",
+      "config": {
+        "endpoint_url": "http://localhost:8080/healthcare/chat",
+        "body_template": { "prompt": "{{prompt}}" },
+        "response_extraction": "response",
+        "timeout_seconds": 15
+      }
+    },
+    {
+      "name": "multiturn-concierge",
+      "connector_key": "http",
+      "note": "Multi-turn hotel concierge - remembers session context and personalises. conversation_id in the body keeps a session together (for coherence / context-retention demos).",
+      "config": {
+        "endpoint_url": "http://localhost:8080/concierge/chat",
+        "body_template": { "prompt": "{{prompt}}", "conversation_id": "demo-session" },
+        "response_extraction": "response",
+        "timeout_seconds": 15
+      }
+    },
+    {
+      "name": "flaky-agent",
+      "connector_key": "http",
+      "note": "Flaky / high-latency agent - errors on a fraction of requests and adds latency spikes. Tune with FLAKY_ERROR_RATE / FLAKY_SPIKE_RATE / FLAKY_SPIKE_MS env vars. Best seen in a Load run (error_rate, p95/p99).",
+      "config": {
+        "endpoint_url": "http://localhost:8080/flaky/chat",
+        "body_template": { "prompt": "{{prompt}}" },
+        "response_extraction": "response",
+        "timeout_seconds": 15
+      }
     }
   ]
 }
